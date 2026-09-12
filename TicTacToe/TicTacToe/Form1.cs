@@ -1,261 +1,210 @@
 using System.Xml;
-using System.Xml.Linq;
 
 namespace TicTacToe
 {
     public partial class Form1 : Form
     {
-        int status = 0;
-        string tag = string.Empty;
-        List<Button> buttons = new List<Button>();
-
+        private readonly List<Button> _buttons = new();
+        private readonly Random _random = new();
+        private bool _isGameActive = true;
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        /*void GenerateTag()
-        {
-            var r = new Random();
-            tag = r.Next(0, 2) == 0 ? "X" : "O";
-        }*/
         private void Form1_Load(object sender, EventArgs e)
         {
+            InitializeBoard();
+        }
+
+        private void InitializeBoard()
+        {
+            _buttons.Clear();
+            panel.Controls.Clear();
+            
+            int buttonSize = 74;
+            int spacing = 8;
+            int startX = (panel.Width - (3 * buttonSize + 2 * spacing)) / 2;
+            int startY = (panel.Height - (3 * buttonSize + 2 * spacing)) / 2;
+            
             for (int x = 0; x < 3; x++)
             {
                 for (int y = 0; y < 3; y++)
                 {
-                    var button = new Button();
-                    button.Left = 10 + 74 * x;
-                    button.Top = 10 + 74 * y;
-                    button.Size = new System.Drawing.Size(74, 74);
-                    button.Font = new Font(FontFamily.GenericSansSerif, 24);
-                    button.BackColor = System.Drawing.Color.Navy;
-                    button.ForeColor = System.Drawing.Color.White;
+                    var button = new Button
+                    {
+                        Left = startX + x * (buttonSize + spacing),
+                        Top = startY + y * (buttonSize + spacing),
+                        Size = new Size(buttonSize, buttonSize),
+                        Font = new Font("Segoe UI", 28, FontStyle.Bold),
+                        BackColor = Color.FromArgb(60, 63, 65),
+                        ForeColor = Color.White,
+                        FlatStyle = FlatStyle.Flat,
+                        Tag = x * 3 + y,
+                        Cursor = Cursors.Hand
+                    };
+                    
+                    button.FlatAppearance.BorderSize = 0;
+                    button.FlatAppearance.MouseOverBackColor = Color.FromArgb(75, 78, 80);
+                    button.FlatAppearance.MouseDownBackColor = Color.FromArgb(45, 45, 48);
+                    
                     button.Click += Button_Click;
-                    //button.MouseEnter += Button_MouseEnter;
-                    //button.MouseLeave += Button_MouseLeave;
-
-                    buttons.Add(button);
-
-                    // œËÍÂÔËÚ¸ ÍÌÓÔÍÛ Í ÙÓÏÂ
+                    _buttons.Add(button);
                     panel.Controls.Add(button);
                 }
             }
         }
-        int CheckWin()
-        {
-            int status = 0;
 
+        /// <summary>
+        /// –ü—Ä–æ–≤–µ—Ä—è–µ—Ç —Å–æ—Å—Ç–æ—è–Ω–∏–µ –∏–≥—Ä—ã. –í–æ–∑–≤—Ä–∞—â–∞–µ—Ç:
+        /// 0 - –∏–≥—Ä–∞ –ø—Ä–æ–¥–æ–ª–∂–∞–µ—Ç—Å—è, 1 - –ø–æ–±–µ–¥–∏–ª X, 2 - –ø–æ–±–µ–¥–∏–ª O, 3 - –Ω–∏—á—å—è
+        /// </summary>
+        private int CheckGameState()
+        {
+            // –ü—Ä–æ–≤–µ—Ä–∫–∞ —Å—Ç—Ä–æ–∫
             for (int i = 0; i < 3; i++)
             {
-                if (buttons[i * 3].Text == "X" &&
-                    buttons[i * 3 + 1].Text == "X" &&
-                    buttons[i * 3 + 2].Text == "X")
-                {
-                    return 1;
-                }
-
-                if (buttons[i * 3].Text == "O" &&
-                    buttons[i * 3 + 1].Text == "O" &&
-                    buttons[i * 3 + 2].Text == "O")
-                {
-                    return 2;
-                }
+                if (IsWinningLine(i * 3, i * 3 + 1, i * 3 + 2))
+                    return _buttons[i * 3].Text == "X" ? 1 : 2;
             }
 
-            // œÓ‚ÂÍ‡ ÔÓ ÒÚÓÎ·ˆ‡Ï Ì‡ "X" Ë "O"
+            // –ü—Ä–æ–≤–µ—Ä–∫–∞ —Å—Ç–æ–ª–±—Ü–æ–≤
             for (int i = 0; i < 3; i++)
             {
-                if (buttons[i].Text == "X" &&
-                    buttons[i + 3].Text == "X" &&
-                    buttons[i + 6].Text == "X")
-                {
-                    return 1;
-                }
-
-                if (buttons[i].Text == "O" &&
-                    buttons[i + 3].Text == "O" &&
-                    buttons[i + 6].Text == "O")
-                {
-                    return 2;
-                }
+                if (IsWinningLine(i, i + 3, i + 6))
+                    return _buttons[i].Text == "X" ? 1 : 2;
             }
 
-            // œÓ‚ÂÍ‡ ÔÓ ‰Ë‡„ÓÌ‡ÎˇÏ Ì‡ "X" Ë "O"
-            if (buttons[0].Text == "X" &&
-                buttons[4].Text == "X" &&
-                buttons[8].Text == "X")
-            {
-                return 1;
-            }
+            // –ü—Ä–æ–≤–µ—Ä–∫–∞ –¥–∏–∞–≥–æ–Ω–∞–ª–µ–π
+            if (IsWinningLine(0, 4, 8) || IsWinningLine(2, 4, 6))
+                return _buttons[4].Text == "X" ? 1 : 2;
 
-            if (buttons[2].Text == "X" &&
-                buttons[4].Text == "X" &&
-                buttons[6].Text == "X")
-            {
-                return 1;
-            }
-
-            if (buttons[0].Text == "O" &&
-                buttons[4].Text == "O" &&
-                buttons[8].Text == "O")
-            {
-                return 2;
-            }
-
-            if (buttons[2].Text == "O" &&
-                buttons[4].Text == "O" &&
-                buttons[6].Text == "O")
-            {
-                return 2;
-            }
-
-            return 0;
+            // –ü—Ä–æ–≤–µ—Ä–∫–∞ –Ω–∞ –Ω–∏—á—å—é
+            return _buttons.All(b => b.Text != "") ? 3 : 0;
         }
 
-        bool fullnessCheck()
+        private bool IsWinningLine(int a, int b, int c)
         {
-            int status = 0;
-            foreach (Button s in buttons)
-            {
-                if (s.Text != "")
-                {
-                    status++;
-                }
-                if (status == 9)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return _buttons[a].Text != "" &&
+                   _buttons[a].Text == _buttons[b].Text &&
+                   _buttons[a].Text == _buttons[c].Text;
         }
 
-
-        private void Button_Click(object? sender, EventArgs e)
+        private async void Button_Click(object? sender, EventArgs e)
         {
-            Random rnd = new Random();
-            int value;
+            if (sender is not Button currentButton || !_isGameActive || currentButton.Text != "")
+                return;
 
-            Button? currentButton = sender as Button;
-
-            if (currentButton.Text != "X" && currentButton.Text != "O")
+            // –•–æ–¥ –∏–≥—Ä–æ–∫–∞
+            currentButton.Text = "X";
+            
+            var gameState = CheckGameState();
+            if (gameState != 0)
             {
-                currentButton.Text = "X";
-                //currentButton.Text = tag;
-                //tag = tag == "X" ? "O" : "X";
-                int timer = rnd.Next(1);
-                if (timer == 0)
-                {
-                    foreach (Button s in buttons)
-                    {
-                        s.Enabled = false;
-                    }
-                    Thread.Sleep(500);
-                    foreach (Button s in buttons)
-                    {
-                        s.Enabled = true;
-                    }
-                }
-                else if (timer == 1)
-                {
-                    foreach (Button s in buttons)
-                    {
-                        s.Enabled = false;
-                    }
-                    Thread.Sleep(1000);
-                    foreach (Button s in buttons)
-                    {
-                        s.Enabled = true;
-                    }
-                }
-                value = rnd.Next(9);
-                while (true)
-                {
+                EndGame(gameState);
+                return;
+            }
 
-                    if (!fullnessCheck())
-                    {
-                        if (buttons[value].Text != "X" && buttons[value].Text != "O")
-                        {
-                            buttons[value].Text = "O";
-                            Refresh();
-
-                            if (CheckWin() == 1)
-                            {
-                                MessageBox.Show(
-                                "œÓ·Â‰‡! ¬˚ Ó‰ÂÊ‡ÎË ÔÓ·Â‰Û.",
-                                "—ÓÓ·˘ÂÌËÂ",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information,
-                                MessageBoxDefaultButton.Button1,
-                                MessageBoxOptions.DefaultDesktopOnly);
-                            }
-                            else if (CheckWin() == 2)
-                            {
-                                MessageBox.Show(
-                                "œÓ‡ÊÂÌËÂ!  ÓÏÔ¸˛ÚÂ Ó‰ÂÊ‡Î ÔÓ·Â‰Û.",
-                                "—ÓÓ·˘ÂÌËÂ",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information,
-                                MessageBoxDefaultButton.Button1,
-                                MessageBoxOptions.DefaultDesktopOnly);
-                            }
-
-                            break;
-
-                        }
-                        else { value = rnd.Next(9); }
-                    }
-                    else if (fullnessCheck() && CheckWin() == 0)
-                    {
-                        MessageBox.Show(
-                        "ÕË˜¸ˇ!",
-                        "—ÓÓ·˘ÂÌËÂ",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information,
-                        MessageBoxDefaultButton.Button1,
-                        MessageBoxOptions.DefaultDesktopOnly);
-                        break;
-                    }
-                    else if (fullnessCheck() && CheckWin() > 0)
-                    {
-                        if (CheckWin() == 1)
-                        {
-                            MessageBox.Show(
-                            "œÓ·Â‰‡! ¬˚ Ó‰ÂÊ‡ÎË ÔÓ·Â‰Û.",
-                            "—ÓÓ·˘ÂÌËÂ",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information,
-                            MessageBoxDefaultButton.Button1,
-                            MessageBoxOptions.DefaultDesktopOnly);
-                        }
-                        else if (CheckWin() == 2)
-                        {
-                            MessageBox.Show(
-                            "œÓ‡ÊÂÌËÂ!  ÓÏÔ¸˛ÚÂ Ó‰ÂÊ‡Î ÔÓ·Â‰Û.",
-                            "—ÓÓ·˘ÂÌËÂ",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Information,
-                            MessageBoxDefaultButton.Button1,
-                            MessageBoxOptions.DefaultDesktopOnly);
-                        }
-
-                        break;
-
-                    }
-                }
+            // –ë–ª–æ–∫–∏—Ä—É–µ–º –ø–æ–ª–µ –Ω–∞ –≤—Ä–µ–º—è —Ö–æ–¥–∞ –∫–æ–º–ø—å—é—Ç–µ—Ä–∞
+            SetButtonsEnabled(false);
+            
+            // –ò–º–∏—Ç–∞—Ü–∏—è —Ä–∞–∑–¥—É–º—å—è –∫–æ–º–ø—å—é—Ç–µ—Ä–∞ (–∞—Å–∏–Ω—Ö—Ä–æ–Ω–Ω–æ, –±–µ–∑ –±–ª–æ–∫–∏—Ä–æ–≤–∫–∏ UI)
+            await Task.Delay(_random.Next(500, 1000));
+            
+            // –•–æ–¥ –∫–æ–º–ø—å—é—Ç–µ—Ä–∞
+            MakeComputerMove();
+            
+            gameState = CheckGameState();
+            if (gameState != 0)
+            {
+                EndGame(gameState);
+            }
+            else
+            {
+                SetButtonsEnabled(true);
             }
         }
-        void clearField()
+
+        private void MakeComputerMove()
         {
-            foreach (Button s in buttons)
+            var emptyButtons = _buttons.Where(b => b.Text == "").ToList();
+            if (emptyButtons.Count == 0) return;
+
+            var randomIndex = _random.Next(emptyButtons.Count);
+            emptyButtons[randomIndex].Text = "O";
+        }
+
+        private void EndGame(int gameState)
+        {
+            _isGameActive = false;
+            string message = gameState switch
             {
-                s.Text = null;
+                1 => "VICTORY! You won the game!",
+                2 => "DEFEAT! Computer won the game.",
+                3 => "DRAW!",
+                _ => ""
+            };
+
+            // –û–±–Ω–æ–≤–ª—è–µ–º —Å—Ç–∞—Ç—É—Å –ø–µ—Ä–µ–¥ –ø–æ–∫–∞–∑–æ–º —Å–æ–æ–±—â–µ–Ω–∏—è
+            UpdateStatus(gameState);
+            
+            MessageBox.Show(message, "Game Over", 
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void UpdateStatus(int gameState)
+        {
+            lblStatus.Text = gameState switch
+            {
+                1 => "YOU WIN! (X)",
+                2 => "COMPUTER WINS! (O)",
+                3 => "DRAW!",
+                _ => lblStatus.Text
+            };
+            
+            // –ú–µ–Ω—è–µ–º —Ü–≤–µ—Ç —Å—Ç–∞—Ç—É—Å–∞ –≤ –∑–∞–≤–∏—Å–∏–º–æ—Å—Ç–∏ –æ—Ç —Ä–µ–∑—É–ª—å—Ç–∞—Ç–∞
+            lblStatus.ForeColor = gameState switch
+            {
+                1 => Color.FromArgb(40, 200, 80),   // –ó–µ–ª–µ–Ω—ã–π –¥–ª—è –ø–æ–±–µ–¥—ã
+                2 => Color.FromArgb(220, 60, 60),   // –ö—Ä–∞—Å–Ω—ã–π –¥–ª—è –ø–æ—Ä–∞–∂–µ–Ω–∏—è
+                3 => Color.FromArgb(255, 193, 7),   // –ñ–µ–ª—Ç—ã–π –¥–ª—è –Ω–∏—á—å–µ–π
+                _ => Color.FromArgb(255, 193, 7)
+            };
+        }
+
+        private void SetButtonsEnabled(bool enabled)
+        {
+            foreach (var button in _buttons)
+            {
+                button.Enabled = enabled;
+            }
+            
+            // –û–±–Ω–æ–≤–ª—è–µ–º —Å—Ç–∞—Ç—É—Å –ø—Ä–∏ –±–ª–æ–∫–∏—Ä–æ–≤–∫–µ/—Ä–∞–∑–±–ª–æ–∫–∏—Ä–æ–≤–∫–µ –∫–Ω–æ–ø–æ–∫
+            if (enabled && _isGameActive)
+            {
+                lblStatus.Text = "YOUR TURN (X)";
+                lblStatus.ForeColor = Color.FromArgb(255, 193, 7);
+            }
+            else if (!enabled && _isGameActive)
+            {
+                lblStatus.Text = "COMPUTER THINKING...";
+                lblStatus.ForeColor = Color.FromArgb(100, 180, 255);
             }
         }
-        private void Form1_MouseClick(object sender, MouseEventArgs e)
+
+        private void ClearField()
         {
+            foreach (var button in _buttons)
+            {
+                button.Text = "";
+            }
+            _isGameActive = true;
+            SetButtonsEnabled(true);
+            
+            // –°–±—Ä–∞—Å—ã–≤–∞–µ–º —Å—Ç–∞—Ç—É—Å –Ω–∞ –Ω–∞—á–∞–ª—å–Ω—ã–π
+            lblStatus.Text = "YOUR TURN (X)";
+            lblStatus.ForeColor = Color.FromArgb(255, 193, 7);
         }
 
         private void exitToolStripMenuItem_Click_1(object sender, EventArgs e)
@@ -265,95 +214,107 @@ namespace TicTacToe
 
         private void newGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            clearField();
+            ClearField();
         }
 
         private void saveGameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
+            try
             {
-                string cellX = "";
-                string cellO = "";
-                int status = 0;
+                using var folderBrowser = new FolderBrowserDialog();
+                if (folderBrowser.ShowDialog() != DialogResult.OK) return;
 
-                if (folderBrowser.ShowDialog() == DialogResult.OK)
+                var cellX = string.Concat(_buttons
+                    .Where((b, i) => b.Text == "X")
+                    .Select(b => ((int)b.Tag! + 1).ToString()));
+                
+                var cellO = string.Concat(_buttons
+                    .Where((b, i) => b.Text == "O")
+                    .Select(b => ((int)b.Tag! + 1).ToString()));
+
+                var xmlDoc = new XmlDocument();
+                var root = xmlDoc.CreateElement("TicTacToe");
+                xmlDoc.AppendChild(root);
+
+                var cellsNode = xmlDoc.CreateElement("Cells");
+                root.AppendChild(cellsNode);
+
+                var xNode = xmlDoc.CreateElement("X");
+                xNode.InnerText = cellX;
+                cellsNode.AppendChild(xNode);
+
+                var oNode = xmlDoc.CreateElement("O");
+                oNode.InnerText = cellO;
+                cellsNode.AppendChild(oNode);
+
+                var fileName = $"file_{DateTime.Now:yyyyMMdd_HHmmss}.xml";
+                var filePath = Path.Combine(folderBrowser.SelectedPath, fileName);
+                xmlDoc.Save(filePath);
+
+                MessageBox.Show($"XML —Ñ–∞–π–ª '{fileName}' —É—Å–ø–µ—à–Ω–æ —Å–æ–∑–¥–∞–Ω –≤ '{folderBrowser.SelectedPath}'!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"–û—à–∏–±–∫–∞ —Å–æ—Ö—Ä–∞–Ω–µ–Ω–∏—è: {ex.Message}", "–û—à–∏–±–∫–∞", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void loadGameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ClearField();
+                using var openFileDialog = new OpenFileDialog
                 {
-                    // √ÂÌÂ‡ˆËˇ ËÏÂÌË Ù‡ÈÎ‡ Ì‡ ÓÒÌÓ‚Â ÚÂÍÛ˘ÂÈ ‰‡Ú˚ Ë ‚ÂÏÂÌË
-                    string fileName = $"file_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xml";
-                    string filePath = Path.Combine(folderBrowser.SelectedPath, fileName);
+                    Filter = "XML —Ñ–∞–π–ª—ã (*.xml)|*.xml"
+                };
 
-                    // —ÓÁ‰‡ÌËÂ XML-‰ÓÍÛÏÂÌÚ‡
-                    XmlDocument xmlDoc = new XmlDocument();
-                    XmlElement root = xmlDoc.CreateElement("TicTacToe");
-                    xmlDoc.AppendChild(root);
+                if (openFileDialog.ShowDialog() != DialogResult.OK) return;
 
-                    foreach (Button cell in buttons)
-                    {
-                        status++;
-                        if (cell.Text != "" && cell.Text == "X")
-                        {
-                            cellX += status;
-                        }
-                        else if (cell.Text != "" && cell.Text == "O")
-                        {
-                            cellO += $"{status}";
-                        }
-                    }
+                var xmlDoc = new XmlDocument();
+                xmlDoc.Load(openFileDialog.FileName);
 
-                    // œËÏÂ ‰Ó·‡‚ÎÂÌËˇ ÛÁÎ‡
-                    XmlElement childNode = xmlDoc.CreateElement("Cells");
-                    root.AppendChild(childNode);
+                var xNode = xmlDoc.SelectSingleNode("//X");
+                var oNode = xmlDoc.SelectSingleNode("//O");
 
-                    XmlElement Xcells = xmlDoc.CreateElement("X");
-                    Xcells.InnerText = cellX;
-                    childNode.AppendChild(Xcells);
-
-                    XmlElement Ocells = xmlDoc.CreateElement("O");
-                    Ocells.InnerText = cellO;
-                    childNode.AppendChild(Ocells);
-
-                    xmlDoc.Save(filePath);
-
-                    // œÓ‰Ú‚ÂÊ‰ÂÌËÂ ÒÓÁ‰‡ÌËˇ Ù‡ÈÎ‡
-                    MessageBox.Show($"XML Ù‡ÈÎ '{fileName}' ÛÒÔÂ¯ÌÓ ÒÓÁ‰‡Ì ‚ '{folderBrowser.SelectedPath}'!");
+                if (xNode == null || oNode == null)
+                {
+                    MessageBox.Show("–ù–µ–≤–µ—Ä–Ω—ã–π —Ñ–æ—Ä–º–∞—Ç —Ñ–∞–π–ª–∞ —Å–æ—Ö—Ä–∞–Ω–µ–Ω–∏—è", "–û—à–∏–±–∫–∞",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
                 }
+
+                foreach (char c in xNode.InnerText)
+                {
+                    if (int.TryParse(c.ToString(), out int index) && index >= 1 && index <= 9)
+                        _buttons[index - 1].Text = "X";
+                }
+
+                foreach (char c in oNode.InnerText)
+                {
+                    if (int.TryParse(c.ToString(), out int index) && index >= 1 && index <= 9)
+                        _buttons[index - 1].Text = "O";
+                }
+
+                // –ü—Ä–æ–≤–µ—Ä—è–µ–º —Å–æ—Å—Ç–æ—è–Ω–∏–µ –∑–∞–≥—Ä—É–∂–µ–Ω–Ω–æ–π –∏–≥—Ä—ã
+                var gameState = CheckGameState();
+                if (gameState != 0)
+                {
+                    _isGameActive = false;
+                    SetButtonsEnabled(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"–û—à–∏–±–∫–∞ –∑–∞–≥—Ä—É–∑–∫–∏: {ex.Message}", "–û—à–∏–±–∫–∞",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void toolStripSplitButton1_ButtonClick(object sender, EventArgs e)
         {
-
-        }
-
-        private void loadGameToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            clearField();
-            // ŒÚÍ˚ÚËÂ ‰Ë‡ÎÓ„‡ ‰Îˇ ‚˚·Ó‡ Ù‡ÈÎ‡
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "XML Ù‡ÈÎ˚ (*.xml)|*.xml"; // ‘ËÎ¸Ú ‰Îˇ XML-Ù‡ÈÎÓ‚
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    string filePath = openFileDialog.FileName; // œÛÚ¸ Í ‚˚·‡ÌÌÓÏÛ Ù‡ÈÎÛ
-
-                    // «‡„ÛÁÍ‡ XML-‰ÓÍÛÏÂÌÚ‡
-                    XmlDocument xmlDoc = new XmlDocument();
-                    xmlDoc.Load(filePath);
-
-                    XmlNode XNode = xmlDoc.SelectSingleNode("//X");
-                    XmlNode ONode = xmlDoc.SelectSingleNode("//O");
-
-                    foreach (char c in XNode.InnerText)
-                    {
-                        buttons[Convert.ToInt32(c.ToString()) - 1].Text = "X";
-                    }
-                    foreach (char c in ONode.InnerText)
-                    {
-                        buttons[Convert.ToInt32(c.ToString()) - 1].Text = "O";
-                    }
-                }
-            }
+            // –ó–∞–≥–ª—É—à–∫–∞ –¥–ª—è —Å–æ–±—ã—Ç–∏—è
         }
     }
 }
