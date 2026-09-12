@@ -133,7 +133,6 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Tic-Tac-Toe";
             Load += Form1_Load;
-            MouseClick += Form1_MouseClick;
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             ResumeLayout(false);
