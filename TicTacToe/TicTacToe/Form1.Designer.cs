@@ -36,16 +36,19 @@
             loadGameToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
             panel = new Panel();
+            lblStatus = new Label();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // toolStrip1
             // 
+            toolStrip1.BackColor = Color.FromArgb(45, 45, 48);
             toolStrip1.ImageScalingSize = new Size(20, 20);
             toolStrip1.Items.AddRange(new ToolStripItem[] { Menu });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(193, 27);
+            toolStrip1.Padding = new Padding(10, 0, 0, 0);
+            toolStrip1.Size = new Size(340, 35);
             toolStrip1.TabIndex = 2;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -53,60 +56,82 @@
             // 
             Menu.DisplayStyle = ToolStripItemDisplayStyle.Text;
             Menu.DropDownItems.AddRange(new ToolStripItem[] { newGameToolStripMenuItem, saveGameToolStripMenuItem, loadGameToolStripMenuItem, exitToolStripMenuItem });
+            Menu.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            Menu.ForeColor = Color.White;
             Menu.Image = (Image)resources.GetObject("Menu.Image");
             Menu.ImageTransparentColor = Color.Magenta;
             Menu.Name = "Menu";
-            Menu.Size = new Size(65, 24);
-            Menu.Text = "Menu";
+            Menu.Size = new Size(65, 32);
+            Menu.Text = "MENU";
             Menu.ButtonClick += toolStripSplitButton1_ButtonClick;
             // 
             // newGameToolStripMenuItem
             // 
+            newGameToolStripMenuItem.Font = new Font("Segoe UI", 10F);
             newGameToolStripMenuItem.Name = "newGameToolStripMenuItem";
-            newGameToolStripMenuItem.Size = new Size(167, 26);
-            newGameToolStripMenuItem.Text = "New game";
+            newGameToolStripMenuItem.Size = new Size(170, 26);
+            newGameToolStripMenuItem.Text = "New Game";
             newGameToolStripMenuItem.Click += newGameToolStripMenuItem_Click;
             // 
             // saveGameToolStripMenuItem
             // 
+            saveGameToolStripMenuItem.Font = new Font("Segoe UI", 10F);
             saveGameToolStripMenuItem.Name = "saveGameToolStripMenuItem";
-            saveGameToolStripMenuItem.Size = new Size(167, 26);
-            saveGameToolStripMenuItem.Text = "Save game";
+            saveGameToolStripMenuItem.Size = new Size(170, 26);
+            saveGameToolStripMenuItem.Text = "Save Game";
             saveGameToolStripMenuItem.Click += saveGameToolStripMenuItem_Click;
             // 
             // loadGameToolStripMenuItem
             // 
+            loadGameToolStripMenuItem.Font = new Font("Segoe UI", 10F);
             loadGameToolStripMenuItem.Name = "loadGameToolStripMenuItem";
-            loadGameToolStripMenuItem.Size = new Size(167, 26);
-            loadGameToolStripMenuItem.Text = "Load game";
+            loadGameToolStripMenuItem.Size = new Size(170, 26);
+            loadGameToolStripMenuItem.Text = "Load Game";
             loadGameToolStripMenuItem.Click += loadGameToolStripMenuItem_Click;
             // 
             // exitToolStripMenuItem
             // 
+            exitToolStripMenuItem.Font = new Font("Segoe UI", 10F);
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(167, 26);
+            exitToolStripMenuItem.Size = new Size(170, 26);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click_1;
             // 
             // panel
             // 
             panel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            panel.AutoSize = true;
-            panel.Location = new Point(0, 30);
+            panel.BackColor = Color.FromArgb(30, 30, 30);
+            panel.BorderStyle = BorderStyle.FixedSingle;
+            panel.Location = new Point(20, 60);
             panel.Name = "panel";
-            panel.Size = new Size(193, 187);
+            panel.Size = new Size(250, 250);
             panel.TabIndex = 3;
+            // 
+            // lblStatus
+            // 
+            lblStatus.AutoSize = true;
+            lblStatus.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            lblStatus.ForeColor = Color.FromArgb(255, 193, 7);
+            lblStatus.Location = new Point(20, 35);
+            lblStatus.Name = "lblStatus";
+            lblStatus.Size = new Size(150, 21);
+            lblStatus.TabIndex = 4;
+            lblStatus.Text = "YOUR TURN (X)";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
-            ClientSize = new Size(193, 215);
+            BackColor = Color.FromArgb(20, 20, 20);
+            ClientSize = new Size(290, 330);
+            Controls.Add(lblStatus);
             Controls.Add(panel);
             Controls.Add(toolStrip1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             Name = "Form1";
-            Text = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Tic-Tac-Toe";
             Load += Form1_Load;
             MouseClick += Form1_MouseClick;
             toolStrip1.ResumeLayout(false);
@@ -123,5 +148,6 @@
         private ToolStripMenuItem newGameToolStripMenuItem;
         private ToolStripMenuItem loadGameToolStripMenuItem;
         private Panel panel;
+        private Label lblStatus;
     }
 }
