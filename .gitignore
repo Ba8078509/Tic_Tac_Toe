@@ -1,68 +1,49 @@
 ```
 # Build artifacts
-*.o
 *.obj
 *.exe
 *.dll
-*.so
-*.a
-*.out
+*.pdb
+*.userprefs
+*.cache
+*.suo
+*.user
+*.aps
+*.ilk
+*.iobj
+*.ipdb
+*.tlog
+*.exp
+*.lib
+*.metagen
+*.wrn
+*.xml
+*.log
+*.tmp
 
 # Dependencies
 packages/
-lib/
-node_modules/
-venv/
-.venv/
-__pycache__/
-*.egg-info/
+bin/
+obj/
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
+# User-specific files
+.vs/
+*.userprefs
+*.sln.docstates
+*.userosscache
+*.suo
 
-# Environment
+# Environment specific
 .env
 .env.local
-*.env.*
+*.local.settings.json
 
-# Editors
-.vscode/
-.idea/
-
-# OS
+# OS generated files
 .DS_Store
 Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Python specific
-*.pyc
-__pycache__/
-.pytest_cache/
-.mypy_cache/
-
-# Java specific
-target/
-.gradle/
-*.class
-
-# Distribution / packaging
-dist/
-build/
-*.tar.gz
-*.zip
-
-# IDE
-.vs/
-*.swp
-*.swo
-
-# Testing
-*.log
-coverage.xml
+ehthumbs.db
+Icon?
+._*
+.Spotlight-V100
+.Trashes
 ```
